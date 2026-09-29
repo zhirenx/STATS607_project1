@@ -1,0 +1,9 @@
+# Packages for `make reproduce` and `make test`: rebuilding every table,
+# figure and the report from the committed artifacts. No PyTorch needed.
+# Requires Python 3.11 or newer; tested with Python 3.14.0 on macOS (arm64).
+certifi==2026.7.22
+matplotlib==3.10.8
+numpy==2.4.4
+pandas==3.0.2
+pyarrow==23.0.1
+pytest==9.1.1

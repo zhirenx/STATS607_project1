@@ -1,0 +1,11 @@
+# Packages for fine-tuning and exporting the models (`make rebuild`,
+# `make smoke`, `make export`), on top of the analysis packages.
+# Versions are those of the original run (April 2026). PyTorch 2.11.0 has
+# wheels for Apple Silicon macOS, Linux and Windows, but not Intel macOS.
+-r requirements.txt
+accelerate==1.13.0
+huggingface_hub==1.10.1
+safetensors==0.7.0
+tokenizers==0.22.2
+torch==2.11.0
+transformers==5.5.3
