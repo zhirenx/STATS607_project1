@@ -97,6 +97,9 @@ class Config:
     training: TrainingConfig
     smoke: SmokeConfig
     models: dict[str, ModelConfig]
+    # Every model key in file order. restrict() keeps it, so a model keeps
+    # its colour in figures even when only some models are analysed.
+    all_model_keys: tuple[str, ...] = ()
 
     def model(self, key: str) -> ModelConfig:
         """Return the model called ``key``, or raise a helpful ``KeyError``."""
@@ -136,4 +139,5 @@ def load_config(path: Path | str = DEFAULT_CONFIG) -> Config:
         training=TrainingConfig(**raw["training"]),
         smoke=SmokeConfig(**raw["smoke"]),
         models=models,
+        all_model_keys=tuple(models),
     )
