@@ -21,13 +21,13 @@ You need Python 3.11-3.14, GNU make, git and an internet connection
 (see [Requirements](#requirements)).
 
 ```sh
-git clone <repository-url> sst2-comparison
-cd sst2-comparison
+git clone https://github.com/zhirenx/STATS607_project1.git
+cd STATS607_project1
 python3 --version        # must print 3.11-3.14; otherwise use python3.12, python3.14, ...
 python3 -m venv .venv
 .venv/bin/python -m pip install --only-binary=:all: -r requirements.txt
 make reproduce           # every table and figure plus a report, in under a minute
-make test                # 50 tests, a few seconds
+make test                # 52 tests, a few seconds
 ```
 
 `make reproduce` (also plain `make`) downloads the SST-2 data (3 MB, checksum
@@ -42,7 +42,7 @@ is optional.
 | | From the included checkpoint | Full rebuild from raw data |
 |---|---|---|
 | Command | `make reproduce` | `make rebuild` |
-| Intended for | the instructor, anyone | someone with an Apple Silicon Mac or a GPU and a free evening |
+| Intended for | the instructor, anyone | someone with an Apple Silicon Mac or a GPU and several hours |
 | Environment | `requirements.txt` | `requirements-train.txt` |
 | Starts from | training logs and predictions committed in `artifacts/` | the raw SST-2 files |
 | Time | under a minute | about 7-10 hours on an Apple Silicon Mac |
@@ -55,8 +55,9 @@ GB, and retraining takes hours. Every result needs much less. It needs each
 model's complete training log and its predictions (logits) for the 872
 validation sentences. These files take about 200 KB and are committed:
 `artifacts/training_logs/` and `artifacts/predictions/`. They were exported
-from the original checkpoints with `make artifacts`. Re-exporting them in a
-fresh environment reproduced every file byte for byte. The tests check that
+from the original checkpoints; `make artifacts` repeats the export on the
+machine that holds them. Re-exporting them in a fresh environment reproduced
+every file byte for byte. The tests check that
 each model's predictions reproduce the accuracy the Trainer logged during
 training.
 
@@ -69,9 +70,9 @@ not seed the classification head, and GPU and Apple MPS training are not
 bit-for-bit repeatable. On a Mac, run `caffeinate -is make rebuild` so the
 machine does not sleep. In the original run one RoBERTa epoch took 11 hours
 instead of about one, most likely because the laptop slept. A model that has
-finished is skipped, so an interrupted rebuild can be restarted. `make smoke` runs the same training and export code on 256
-sentences in about a minute, after a 270 MB model download on first use, to
-show that it works.
+finished is skipped, so an interrupted rebuild can be restarted. `make smoke`
+runs the same training and export code on 256 sentences in about a minute,
+after a 270 MB model download on first use, to show that it works.
 
 ```sh
 .venv/bin/python -m pip install --only-binary=:all: -r requirements-train.txt
@@ -99,9 +100,14 @@ caffeinate -is make rebuild     # just `make rebuild` on Linux
   mirror, set `HF_ENDPOINT`. `data/raw/README.md` explains how to download
   the files by hand.
 - **Full rebuild only**: an Apple Silicon Mac, or Linux or Windows (PyTorch
-  2.11 has no Intel-Mac wheels), and about 5 GB of free disk. On a Linux
-  machine without a GPU, first run `pip install torch==2.11.0 --index-url
-  https://download.pytorch.org/whl/cpu`.
+  2.11 has no Intel-Mac wheels), and about 5 GB of free disk. On Linux,
+  PyTorch also installs its CUDA packages, at versions PyTorch pins itself.
+  On a Linux machine without a GPU, first run `pip install torch==2.11.0
+  --index-url https://download.pytorch.org/whl/cpu`.
+
+A GitHub Actions workflow (`.github/workflows/reproduce.yml`) runs the quick
+start on every push on fresh Ubuntu and macOS machines, with Python 3.11 and
+3.14.
 
 ## Data
 

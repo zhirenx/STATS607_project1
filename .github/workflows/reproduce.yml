@@ -1,0 +1,34 @@
+# Runs the README quick start on fresh machines: Ubuntu (GNU Make 4, dash as
+# /bin/sh) and macOS, with the oldest and newest supported Python.
+name: reproduce
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  reproduce:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+        python: ["3.11", "3.14"]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python }}
+      - name: Create the environment
+        run: |
+          python -m venv .venv
+          .venv/bin/python -m pip install --only-binary=:all: -r requirements.txt
+      - name: make reproduce
+        run: make reproduce
+      - name: A second run rebuilds nothing
+        run: test "$(make -n reproduce | grep -c 'src\.analysis')" -eq 0
+      - name: make test
+        run: make test
+      - name: The working tree is unchanged
+        run: test -z "$(git status --porcelain)"
