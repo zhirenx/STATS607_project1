@@ -44,14 +44,28 @@ def sha256sum(path: Path, chunk_size: int = 1 << 20) -> str:
     return digest.hexdigest()
 
 
+def ssl_context() -> ssl.SSLContext:
+    """Return a TLS context using ``$SSL_CERT_FILE`` if set, else certifi's bundle.
+
+    python.org builds of Python on macOS do not use the system certificate
+    store, so plain ``urllib`` fails there without an explicit bundle.
+    """
+    cafile = os.environ.get("SSL_CERT_FILE") or certifi.where()
+    try:
+        return ssl.create_default_context(cafile=cafile)
+    except (OSError, ssl.SSLError) as exc:
+        raise DownloadError(
+            f"cannot load TLS certificates from {cafile} ({exc}); "
+            "unset SSL_CERT_FILE or point it to a PEM certificate bundle"
+        ) from exc
+
+
 def fetch(url: str, dest: Path, expected_sha256: str, timeout: float = 60.0) -> Path:
     """Download ``url`` to ``dest`` unless a verified copy is already there.
 
     The download goes to a temporary file that replaces ``dest`` only after
     the checksum matches, so an interrupted or corrupted download never
-    leaves a file that later steps would trust. Certificates come from
-    ``$SSL_CERT_FILE`` if set, otherwise from ``certifi``, because python.org
-    builds of Python on macOS do not use the system certificate store.
+    leaves a file that later steps would trust.
     """
     dest.parent.mkdir(parents=True, exist_ok=True)
     if dest.exists():
@@ -61,7 +75,7 @@ def fetch(url: str, dest: Path, expected_sha256: str, timeout: float = 60.0) -> 
         log.warning("%s does not match its checksum; downloading it again", dest)
 
     partial = dest.with_name(dest.name + ".part")
-    context = ssl.create_default_context(cafile=os.environ.get("SSL_CERT_FILE") or certifi.where())
+    context = ssl_context()
     log.info("downloading %s", url)
     try:
         with urllib.request.urlopen(url, timeout=timeout, context=context) as response:
@@ -69,16 +83,22 @@ def fetch(url: str, dest: Path, expected_sha256: str, timeout: float = 60.0) -> 
                 shutil.copyfileobj(response, out)
     except (urllib.error.URLError, OSError) as exc:
         partial.unlink(missing_ok=True)
+        if isinstance(getattr(exc, "reason", exc), ssl.SSLCertVerificationError):
+            cause = ("the server's TLS certificate could not be verified; behind a proxy "
+                     "that re-signs HTTPS traffic, set SSL_CERT_FILE to its certificate bundle")
+        else:
+            cause = f"{exc}; check the internet connection"
         raise DownloadError(
-            f"could not download {url} ({exc}). Check the internet connection, "
-            f"or download the file in a browser and save it as {dest}."
+            f"could not download {url} ({cause}). Alternatively, download that URL in a "
+            f"browser, save it as {dest} and rerun; it must have SHA-256 {expected_sha256}."
         ) from exc
 
     actual = sha256sum(partial)
     if actual != expected_sha256:
         partial.unlink()
         raise DownloadError(
-            f"checksum mismatch for {url}: expected {expected_sha256}, got {actual}"
+            f"checksum mismatch for {url}: expected {expected_sha256}, got {actual}. "
+            "The file on the server differs from the one the analysis used."
         )
     os.replace(partial, dest)
     log.info("saved %s (%d bytes, sha256 verified)", dest, dest.stat().st_size)

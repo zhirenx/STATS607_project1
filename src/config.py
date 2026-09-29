@@ -9,6 +9,7 @@ experiment.
 from __future__ import annotations
 
 import dataclasses
+import os
 import tomllib
 from dataclasses import dataclass
 from pathlib import Path
@@ -43,9 +44,14 @@ class DataConfig:
     splits: dict[str, SplitConfig]
 
     def url(self, split: str) -> str:
-        """Return the download URL of ``split`` at the pinned revision."""
+        """Return the download URL of ``split`` at the pinned revision.
+
+        ``$HF_ENDPOINT`` selects a Hugging Face mirror, as it does for the
+        Hugging Face libraries; the checksum is verified either way.
+        """
+        endpoint = os.environ.get("HF_ENDPOINT", "https://huggingface.co").rstrip("/")
         return (
-            f"https://huggingface.co/datasets/{self.hub_repo}/resolve/"
+            f"{endpoint}/datasets/{self.hub_repo}/resolve/"
             f"{self.revision}/{self.splits[split].remote_path}"
         )
 
