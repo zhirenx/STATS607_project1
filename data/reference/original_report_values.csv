@@ -1,0 +1,29 @@
+model,quantity,location,original_report
+BERT,parameters_millions,Table I,110
+BERT,best_val_accuracy_pct,Table I,93.2
+BERT,best_epoch,Table I,3
+BERT,train_time_minutes,Table I,169
+DistilBERT,parameters_millions,Table I,67
+DistilBERT,best_val_accuracy_pct,Table I,90.7
+DistilBERT,best_epoch,Table I,3
+DistilBERT,train_time_minutes,Table I,73
+RoBERTa,parameters_millions,Table I,125
+RoBERTa,best_val_accuracy_pct,Table I,93.7
+RoBERTa,best_epoch,Table I,2
+RoBERTa,train_time_minutes,Table I,806
+BERT,epoch1_val_accuracy_pct,Table II,92.2
+BERT,epoch2_val_accuracy_pct,Table II,91.5
+BERT,epoch3_val_accuracy_pct,Table II,93.2
+BERT,epoch3_val_loss,Table II,0.329
+DistilBERT,epoch1_val_accuracy_pct,Table II,90.1
+DistilBERT,epoch2_val_accuracy_pct,Table II,90.4
+DistilBERT,epoch3_val_accuracy_pct,Table II,90.7
+DistilBERT,epoch3_val_loss,Table II,0.399
+RoBERTa,epoch1_val_accuracy_pct,Table II,92.8
+RoBERTa,epoch2_val_accuracy_pct,Table II,93.7
+RoBERTa,epoch3_val_accuracy_pct,Table II,93.5
+RoBERTa,epoch3_val_loss,Table II,0.307
+RoBERTa,confusion_tn,Section III-D and Fig. 3,392
+RoBERTa,confusion_fp,Section III-D and Fig. 3,36
+RoBERTa,confusion_fn,Section III-D and Fig. 3,17
+RoBERTa,confusion_tp,Section III-D and Fig. 3,427
