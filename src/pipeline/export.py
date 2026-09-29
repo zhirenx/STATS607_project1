@@ -188,6 +188,13 @@ def export_model(config: Config, model_key: str, models_dir: Path = MODELS_DIR,
     predictions_path.with_suffix(".json").write_text(json.dumps(export_info, indent=2) + "\n")
     log.info("wrote %s (accuracy %.4f; the Trainer logged %.4f for %s)",
              predictions_path, accuracy, state["best_metric"], best.name)
+    correct = int((predictions["pred"] == predictions["label"]).sum())
+    if correct != round(state["best_metric"] * len(predictions)):
+        log.warning(
+            "%d of %d predictions are correct, but the Trainer logged accuracy %.6f for %s; "
+            "the exported model does not behave like the one evaluated during training",
+            correct, len(predictions), state["best_metric"], best.name,
+        )
     return predictions_path
 
 
