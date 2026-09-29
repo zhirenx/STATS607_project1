@@ -1,0 +1,59 @@
+# Configuration for the SST-2 transformer comparison.
+#
+# Every setting that affects the results is pinned here: the dataset
+# revision and file checksums, the model revisions, the fine-tuning
+# hyperparameters, and the random seed. Scripts read this file through
+# src/config.py; nothing is hard-coded in the pipeline itself.
+
+seed = 42
+
+[data]
+# GLUE SST-2 as hosted on the Hugging Face Hub. The revision is the one the
+# original analysis downloaded in April 2026 (verified by checksum).
+hub_repo = "nyu-mll/glue"
+revision = "bcdcba79d07bc864c1c254ccfcedcce55bcc9a8c"
+
+[data.splits.train]
+remote_path = "sst2/train-00000-of-00001.parquet"
+sha256 = "66a253e67968acfabcbe49dbe9da964b42ac1c851c40ab760e8c8942efdb3229"
+rows = 67349
+
+[data.splits.validation]
+remote_path = "sst2/validation-00000-of-00001.parquet"
+sha256 = "a1371f3b3a7b0bcefa8388799a9359dc3ce76c349cc0079507a7991364fd2a9b"
+rows = 872
+
+[training]
+# Identical for all three models, as in the original notebook.
+max_length = 128
+num_train_epochs = 3
+learning_rate = 2e-5
+per_device_train_batch_size = 16
+per_device_eval_batch_size = 32
+weight_decay = 0.01
+logging_steps = 100
+
+[smoke]
+# A few-minute run that exercises the training and export code on a subset
+# (the Makefile's `smoke` target runs it for DistilBERT, the smallest model).
+train_rows = 256
+validation_rows = 64
+num_train_epochs = 1
+
+# Hub ids are the names the original notebook used; the Hub redirects them to
+# google-bert/bert-base-uncased, distilbert/distilbert-base-uncased and
+# FacebookAI/roberta-base. Revisions are the snapshots the original run used.
+[models.bert]
+display_name = "BERT"
+hub_id = "bert-base-uncased"
+revision = "86b5e0934494bd15c9632b12f734a8a67f723594"
+
+[models.distilbert]
+display_name = "DistilBERT"
+hub_id = "distilbert-base-uncased"
+revision = "12040accade4e8a0f71eabdb258fecc2e7e948be"
+
+[models.roberta]
+display_name = "RoBERTa"
+hub_id = "roberta-base"
+revision = "e2da8e2f811d1448a5b465c236feacd80ffbac7b"
