@@ -1,0 +1,19 @@
+{
+  "model": "roberta",
+  "checkpoint": "checkpoint-8420",
+  "checkpoint_sha256": "06a8f56d2d05b74358888b873d9fa4eeb1099a3816a488e11767b47f31b4f05a",
+  "num_parameters": 124647170,
+  "tokenizer": "roberta-base@e2da8e2f811d1448a5b465c236feacd80ffbac7b",
+  "max_length": 128,
+  "padding": "max_length",
+  "batch_size": 32,
+  "device": "mps",
+  "rows": 872,
+  "accuracy": 0.9369266055045872,
+  "trainer_logged_best_metric": 0.9369266055045872,
+  "versions": {
+    "python": "3.14.0",
+    "torch": "2.11.0",
+    "transformers": "5.5.3"
+  }
+}

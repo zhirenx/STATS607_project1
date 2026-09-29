@@ -1,0 +1,31 @@
+{
+  "model": "distilbert",
+  "trained_by": "the original notebook sst2_project.ipynb (git tag 'original'), before this pipeline existed",
+  "hub_id": "distilbert-base-uncased",
+  "revision": "12040accade4e8a0f71eabdb258fecc2e7e948be",
+  "smoke": false,
+  "train_rows": 67349,
+  "validation_rows": 872,
+  "seed": 42,
+  "device": "mps",
+  "train_runtime_seconds": 4402,
+  "train_runtime_hms": "1:13:22",
+  "checkpoint_saved_at": {
+    "checkpoint-4210": "2026-04-20T22:20:44-04:00",
+    "checkpoint-8420": "2026-04-20T22:49:03-04:00",
+    "checkpoint-12630": "2026-04-20T23:11:48-04:00"
+  },
+  "versions": {
+    "python": "3.14.0",
+    "torch": "2.11.0",
+    "transformers": "5.5.3"
+  },
+  "sources": {
+    "revision": "the snapshot in the local Hugging Face cache that the notebook loaded (the notebook itself did not pin one)",
+    "seed": "Trainer default; applied after the classification head was initialised, so the head's initial weights were not seeded",
+    "device": "printed by the notebook's environment-check cell",
+    "train_runtime_seconds": "Trainer progress bar in the output of the DistilBERT training cell (wall clock, including any idle time such as the computer sleeping)",
+    "checkpoint_saved_at": "modification times of checkpoint-*/trainer_state.json on the author's machine",
+    "versions": "notebook metadata and the environment-check cell"
+  }
+}

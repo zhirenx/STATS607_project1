@@ -1,0 +1,31 @@
+{
+  "model": "bert",
+  "trained_by": "the original notebook sst2_project.ipynb (git tag 'original'), before this pipeline existed",
+  "hub_id": "bert-base-uncased",
+  "revision": "86b5e0934494bd15c9632b12f734a8a67f723594",
+  "smoke": false,
+  "train_rows": 67349,
+  "validation_rows": 872,
+  "seed": 42,
+  "device": "mps",
+  "train_runtime_seconds": 17626,
+  "train_runtime_hms": "4:53:46",
+  "checkpoint_saved_at": {
+    "checkpoint-4210": "2026-04-20T19:42:11-04:00",
+    "checkpoint-8420": "2026-04-20T21:07:41-04:00",
+    "checkpoint-12630": "2026-04-20T21:53:17-04:00"
+  },
+  "versions": {
+    "python": "3.14.0",
+    "torch": "2.11.0",
+    "transformers": "5.5.3"
+  },
+  "sources": {
+    "revision": "the snapshot in the local Hugging Face cache that the notebook loaded (the notebook itself did not pin one)",
+    "seed": "Trainer default; applied after the classification head was initialised, so the head's initial weights were not seeded",
+    "device": "printed by the notebook's environment-check cell",
+    "train_runtime_seconds": "Trainer progress bar in the output of the BERT training cell (wall clock, including any idle time such as the computer sleeping)",
+    "checkpoint_saved_at": "modification times of checkpoint-*/trainer_state.json on the author's machine",
+    "versions": "notebook metadata and the environment-check cell"
+  }
+}

@@ -1,0 +1,19 @@
+{
+  "model": "distilbert",
+  "checkpoint": "checkpoint-12630",
+  "checkpoint_sha256": "84740fcf84d44936dc1396bdfffd5d2527f6e6aaefc3a40aeb14d62125797bd5",
+  "num_parameters": 66955010,
+  "tokenizer": "distilbert-base-uncased@12040accade4e8a0f71eabdb258fecc2e7e948be",
+  "max_length": 128,
+  "padding": "max_length",
+  "batch_size": 32,
+  "device": "mps",
+  "rows": 872,
+  "accuracy": 0.9071100917431193,
+  "trainer_logged_best_metric": 0.9071100917431193,
+  "versions": {
+    "python": "3.14.0",
+    "torch": "2.11.0",
+    "transformers": "5.5.3"
+  }
+}

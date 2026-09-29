@@ -1,0 +1,19 @@
+{
+  "model": "bert",
+  "checkpoint": "checkpoint-4210",
+  "checkpoint_sha256": "12ef1e540dcc203acc68c8821a487955c98b3a07da555a5cd3e26b395f0a6cde",
+  "num_parameters": 109483778,
+  "tokenizer": "bert-base-uncased@86b5e0934494bd15c9632b12f734a8a67f723594",
+  "max_length": 128,
+  "padding": "max_length",
+  "batch_size": 32,
+  "device": "mps",
+  "rows": 872,
+  "accuracy": 0.9311926605504587,
+  "trainer_logged_best_metric": 0.9311926605504587,
+  "versions": {
+    "python": "3.14.0",
+    "torch": "2.11.0",
+    "transformers": "5.5.3"
+  }
+}
