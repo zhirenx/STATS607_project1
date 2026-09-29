@@ -1,5 +1,6 @@
 """Pipeline integrity: the analysis turns the artifacts into the expected outputs."""
 
+import os
 import shutil
 import subprocess
 import sys
@@ -57,16 +58,34 @@ def test_original_report_comparison_flags_the_known_discrepancies(outputs):
     assert not any(model == "DistilBERT" for model, _ in mismatched)
 
 
-def test_tables_are_deterministic(tmp_path, splits):
-    for attempt in ("a", "b"):
-        tables.main(["--table", "pairwise_comparison", "--out", str(tmp_path / f"{attempt}.csv")])
-    assert (tmp_path / "a.csv").read_bytes() == (tmp_path / "b.csv").read_bytes()
+def run_fresh(module, args, out, hash_seed="0", block_torch=False):
+    """Run ``python -m <module> <args> --out <out>`` in a new interpreter and check it succeeds.
+
+    ``block_torch`` makes any import of torch or transformers fail, and
+    ``hash_seed`` sets PYTHONHASHSEED, which changes the iteration order of sets.
+    """
+    block = "sys.modules['torch'] = sys.modules['transformers'] = None; " if block_torch else ""
+    code = f"import runpy, sys; {block}runpy.run_module('{module}', run_name='__main__')"
+    env = {**os.environ, "PYTHONHASHSEED": hash_seed, "MPLBACKEND": "Agg"}
+    result = subprocess.run([sys.executable, "-c", code, *args, "--out", str(out)],
+                            cwd=ROOT, env=env, capture_output=True, text=True)
+    assert result.returncode == 0, result.stderr
+    return out
 
 
-def test_analysis_does_not_need_pytorch():
-    code = ("import sys, src.analysis.tables, src.analysis.figures, src.analysis.report; "
-            "sys.exit(any(m in sys.modules for m in ('torch', 'transformers')))")
-    assert subprocess.run([sys.executable, "-c", code], cwd=ROOT).returncode == 0
+@pytest.mark.parametrize("table", ["pairwise_comparison", "model_comparison", "misclassified_examples"])
+def test_tables_do_not_depend_on_hash_seed(tmp_path, splits, table):
+    outputs = [run_fresh("src.analysis.tables", ["--table", table], tmp_path / f"{seed}.csv",
+                         hash_seed=seed) for seed in ("0", "1", "2")]
+    assert len({out.read_bytes() for out in outputs}) == 1
+
+
+def test_analysis_runs_without_pytorch(tmp_path, splits):
+    # Any import of torch or transformers, even one inside a function, fails here.
+    run_fresh("src.analysis.tables", ["--table", "model_comparison"],
+              tmp_path / "model_comparison.csv", block_torch=True)
+    run_fresh("src.analysis.figures", ["--figure", "training_curves"],
+              tmp_path / "training_curves.png", block_torch=True)
 
 
 @pytest.mark.skipif(shutil.which("make") is None, reason="make is not installed")
