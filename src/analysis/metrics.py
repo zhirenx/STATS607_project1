@@ -116,13 +116,23 @@ def best_evaluation(history: pd.DataFrame) -> pd.Series:
     return ordered.loc[ordered["eval_accuracy"].idxmax()]
 
 
+def mcnemar_exact_p(only_a: int, only_b: int) -> float:
+    """Return the two-sided exact McNemar p-value for two discordant counts.
+
+    ``only_a`` and ``only_b`` count the examples that only classifier A, or
+    only classifier B, gets right. Under the null hypothesis of equal
+    accuracy, ``only_a`` is Binomial(only_a + only_b, 1/2) given the total;
+    the p-value doubles the smaller tail and is capped at 1.
+    """
+    n = only_a + only_b
+    if n == 0:
+        return 1.0
+    tail = sum(math.comb(n, i) for i in range(min(only_a, only_b) + 1)) / 2**n
+    return min(1.0, 2 * tail)
+
+
 def mcnemar_exact(correct_a: Iterable[bool], correct_b: Iterable[bool]) -> dict[str, int | float]:
     """Compare two classifiers scored on the same examples with McNemar's exact test.
-
-    Under the null hypothesis that both classifiers have the same accuracy,
-    the number of examples only A gets right, out of those where exactly one
-    of them is right, is Binomial(n_discordant, 1/2). The two-sided p-value
-    doubles the smaller tail and is capped at 1.
 
     Returns the discordant counts ``only_a`` and ``only_b`` and ``p_value``.
     """
@@ -132,12 +142,7 @@ def mcnemar_exact(correct_a: Iterable[bool], correct_b: Iterable[bool]) -> dict[
         raise ValueError("correct_a and correct_b must have the same length")
     only_a = int(np.sum(a & ~b))
     only_b = int(np.sum(~a & b))
-    n = only_a + only_b
-    if n == 0:
-        return {"only_a": 0, "only_b": 0, "p_value": 1.0}
-    k = min(only_a, only_b)
-    tail = sum(math.comb(n, i) for i in range(k + 1)) / 2**n
-    return {"only_a": only_a, "only_b": only_b, "p_value": min(1.0, 2 * tail)}
+    return {"only_a": only_a, "only_b": only_b, "p_value": mcnemar_exact_p(only_a, only_b)}
 
 
 def epoch_minutes(checkpoint_saved_at: dict[str, str], total_seconds: float) -> list[int]:
