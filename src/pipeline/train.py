@@ -9,7 +9,7 @@ script, so existing checkpoints are never overwritten.
 Usage::
 
     python -m src.pipeline.train --model distilbert --models-dir artifacts/rebuild/models
-    python -m src.pipeline.train --model distilbert --smoke   # a few minutes
+    python -m src.pipeline.train --model distilbert --smoke   # about a minute
 """
 
 from __future__ import annotations

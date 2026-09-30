@@ -10,8 +10,8 @@ regenerates every table and figure.
 
 **Main result.** On the 872 validation sentences RoBERTa is the most accurate
 model: 93.7% (95% CI 91.9-95.1%). BERT reaches 93.1% and DistilBERT 90.7%.
-RoBERTa and BERT are statistically indistinguishable (McNemar exact test,
-p = 0.58). DistilBERT has 39% fewer parameters than BERT and needs half the
+The 0.6-point difference between RoBERTa and BERT is not statistically
+significant (McNemar exact test, p = 0.58). DistilBERT has 39% fewer parameters than BERT and needs half the
 training compute. It is 2.4-3.0 points less accurate than the other two
 (p ≤ 0.004).
 
@@ -69,8 +69,10 @@ the committed results, of a few validation sentences. The original run did
 not seed the classification head, and GPU and Apple MPS training are not
 bit-for-bit repeatable. On a Mac, run `caffeinate -is make rebuild` so the
 machine does not sleep. In the original run one RoBERTa epoch took 11 hours
-instead of about one, most likely because the laptop slept. A model that has
-finished is skipped, so an interrupted rebuild can be restarted. `make smoke`
+instead of about one, most likely because the laptop slept. Rerunning `make
+rebuild` skips models that have finished. If a model was interrupted, delete
+`artifacts/rebuild/models/<model>` first: that model then restarts from epoch
+1, since training does not resume mid-model. `make smoke`
 runs the same training and export code on 256 sentences in about a minute,
 after a 270 MB model download on first use, to show that it works.
 
@@ -100,10 +102,12 @@ caffeinate -is make rebuild     # just `make rebuild` on Linux
   mirror, set `HF_ENDPOINT`. `data/raw/README.md` explains how to download
   the files by hand.
 - **Full rebuild only**: an Apple Silicon Mac, or Linux or Windows (PyTorch
-  2.11 has no Intel-Mac wheels), and about 5 GB of free disk. On Linux,
-  PyTorch also installs its CUDA packages, at versions PyTorch pins itself.
-  On a Linux machine without a GPU, first run `pip install torch==2.11.0
-  --index-url https://download.pytorch.org/whl/cpu`.
+  2.11 has no Intel-Mac wheels). Allow about 5 GB of free disk on a Mac and
+  about 10 GB on Linux, where PyTorch from PyPI also installs the CUDA 13
+  libraries it depends on. Training on an NVIDIA GPU needs a driver that
+  supports CUDA 13 (version 580 or newer); otherwise PyTorch silently falls
+  back to the CPU, which takes days. On a Linux machine without a GPU, first
+  run `pip install torch==2.11.0 --index-url https://download.pytorch.org/whl/cpu`.
 
 A GitHub Actions workflow (`.github/workflows/reproduce.yml`) runs the quick
 start on every push on fresh Ubuntu and macOS machines, with Python 3.11 and
@@ -141,15 +145,17 @@ Supplementary outputs:
 - `results/tables/pairwise_comparison.csv`: McNemar tests for each pair of models.
 - `results/tables/dataset_summary.csv`, `results/figures/label_distribution.png`, `results/figures/sentence_lengths.png`: the data.
 - `results/figures/accuracy_vs_size.png`.
-- `results/tables/original_report_comparison.csv`: every number in the original report next to its reproduced value.
+- `results/tables/original_report_comparison.csv`: the 28 numbers of the original report's Tables I and II and its confusion matrix, each next to its reproduced value.
 - `results/report/summary.md`: all of the above in one page.
 
 ## Differences from the original report
 
-19 of the 28 numbers printed in the original report are reproduced exactly.
+The original report's Tables I and II and its confusion matrix contain 28
+numbers; 19 are reproduced exactly, and
 `results/tables/original_report_comparison.csv` lists all 28. The other nine
-come from three problems in the original work, which
-[docs/discrepancies.md](docs/discrepancies.md) documents with evidence:
+come from the first two problems below, and the third undermines the report's
+speed comparisons. [docs/discrepancies.md](docs/discrepancies.md) documents
+each with evidence:
 
 1. **The BERT results came from a run that no longer exists.** BERT was
    trained twice and the second run overwrote the first run's checkpoints.
@@ -205,16 +211,17 @@ run `git checkout original` or browse the tag on GitHub.
 ## Without make
 
 Each Makefile step is a plain Python command, so the pipeline also runs where
-make is missing (use `.venv\Scripts\python` on Windows):
+make is missing. On Windows, write `.venv\Scripts\python` instead of
+`.venv/bin/python`:
 
 ```sh
 .venv/bin/python -m src.pipeline.download_data --split train
 .venv/bin/python -m src.pipeline.download_data --split validation
-.venv/bin/python -m src.analysis.tables --table model_comparison --out results/tables/model_comparison.csv
-.venv/bin/python -m src.analysis.figures --figure training_curves --out results/figures/training_curves.png
+.venv/bin/python -m src.analysis.tables --all --out-dir results/tables
+.venv/bin/python -m src.analysis.figures --all --out-dir results/figures
 .venv/bin/python -m src.analysis.report --tables-dir results/tables --figures-dir results/figures --out results/report/summary.md
 .venv/bin/python -m pytest -q
 ```
 
-`python -m src.analysis.tables --help` lists every table, and
-`python -m src.analysis.figures --help` lists every figure.
+To build a single output, use `--table <name> --out <file>` or `--figure
+<name> --out <file>`; `--help` lists the names.

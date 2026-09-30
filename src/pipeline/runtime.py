@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+import sys
+
 
 def require_training_libraries() -> None:
     """Exit with install instructions if torch or transformers is missing."""
@@ -11,7 +13,8 @@ def require_training_libraries() -> None:
     except ImportError as exc:
         raise SystemExit(
             f"This step needs the packages in requirements-train.txt ({exc}).\n"
-            "Install them with: pip install -r requirements-train.txt"
+            f"Install them with: {sys.executable} -m pip install --only-binary=:all: "
+            "-r requirements-train.txt"
         ) from None
 
 

@@ -50,7 +50,8 @@ def _read(path: Path) -> Path:
         shown = path
     raise FileNotFoundError(
         f"{shown} is missing. It is committed to the repository, so restore it with "
-        f"`git checkout -- {shown}`, or rebuild it from model checkpoints with `make export`."
+        f"`git checkout -- {shown}`, or re-export it with `make artifacts` on a machine "
+        "that has the model checkpoints in artifacts/models/."
     )
 
 

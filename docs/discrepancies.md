@@ -4,12 +4,13 @@ The original report ([original_report.pdf](original_report.pdf)) was put
 together by hand outside the project. The notebook's saved state could not
 regenerate it. Every training cell ended in
 `RuntimeError: on_train_begin must be called before on_evaluate`, the summary
-CSV was empty, two plots were blank axes, and two were never written. Rebuilt
-from the data that survived, the pipeline reproduces 19 of the report's 28
-numbers exactly; `results/tables/original_report_comparison.csv` lists all 28.
-The other nine have three causes. The evidence below can be checked in the
-commit tagged `original`, for example with
-`git show original:sst2_project.ipynb`.
+CSV was empty, two plots were blank axes, and two were never written. The
+report's Tables I and II and its confusion matrix contain 28 numbers. Rebuilt
+from the data that survived, the pipeline reproduces 19 of them exactly;
+`results/tables/original_report_comparison.csv` lists all 28. The other nine
+come from the first two causes below. The third cause undermines the report's
+speed comparisons in its text. The evidence can be checked in the commit
+tagged `original`, for example with `git show original:sst2_project.ipynb`.
 
 ## 1. The BERT row describes a run that no longer exists (7 numbers)
 
@@ -49,7 +50,7 @@ epochs 2 and 3; its error-analysis cell prints "53 / 872" errors, which is
 which maps the names. It refuses any checkpoint with missing or unexpected
 weights, and training no longer reloads models inside the Trainer.
 
-## 3. The training times include idle time (the efficiency claims)
+## 3. The training times include idle time (the speed comparisons)
 
 The recorded wall-clock times are 4:53:46 for BERT, 1:13:22 for DistilBERT
 and 13:25:37 for RoBERTa; the report's 169 minutes for BERT belongs to the

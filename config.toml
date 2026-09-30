@@ -34,7 +34,7 @@ weight_decay = 0.01
 logging_steps = 100
 
 [smoke]
-# A few-minute run that exercises the training and export code on a subset
+# A one-minute run that exercises the training and export code on a subset
 # (the Makefile's `smoke` target runs it for DistilBERT, the smallest model).
 train_rows = 256
 validation_rows = 64

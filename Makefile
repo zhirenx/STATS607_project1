@@ -9,7 +9,7 @@
 #                   artifacts/rebuild/, then build results/rebuild/.
 #                   Needs requirements-train.txt.
 #   make smoke      Fine-tune DistilBERT briefly on a small subset to check the
-#                   training and export code (a few minutes).
+#                   training and export code (about a minute).
 #   make artifacts  Re-export the committed artifacts from the original
 #                   checkpoints in artifacts/models/ (author's machine only).
 #   make clean      Delete generated results. Never deletes checkpoints or
@@ -84,7 +84,7 @@ $(RES)/figures/label_distribution.png $(RES)/figures/sentence_lengths.png: $(RAW
 
 $(REPORT): $(TABLES) $(FIGURES) src/analysis/report.py
 	$(PYTHON) -m src.analysis.report --tables-dir $(RES)/tables \
-		--figures-dir $(RES)/figures --out $@
+		--figures-dir $(RES)/figures --artifacts $(ART) --out $@
 
 test: check-env $(RAW)
 	$(PYTHON) -m pytest -q
@@ -93,18 +93,18 @@ test: check-env $(RAW)
 check-env:
 	@$(PYTHON) -c "import sys; sys.exit(not (3, 11) <= sys.version_info[:2] <= (3, 14))" \
 		2>/dev/null || { \
-		echo "error: '$(PYTHON)' is not Python 3.11-3.14. Create the environment first:" >&2; \
-		echo "  python3.14 -m venv .venv && .venv/bin/python -m pip install -r requirements.txt" >&2; \
+		echo "error: '$(PYTHON)' is not Python 3.11-3.14. With a Python 3.11-3.14 as python3, run:" >&2; \
+		echo "  python3 -m venv .venv && .venv/bin/python -m pip install --only-binary=:all: -r requirements.txt" >&2; \
 		exit 1; }
 	@$(PYTHON) -c "import certifi, matplotlib, numpy, pandas, pyarrow, pytest" \
 		2>/dev/null || { \
 		echo "error: packages from requirements.txt are missing. Install them with:" >&2; \
-		echo "  $(PYTHON) -m pip install -r requirements.txt" >&2; \
+		echo "  $(PYTHON) -m pip install --only-binary=:all: -r requirements.txt" >&2; \
 		exit 1; }
 
 # Full rebuild into separate directories, so the committed artifacts and the
-# original checkpoints are never overwritten. A model whose directory already
-# holds a finished run is skipped, so an interrupted rebuild can be resumed.
+# original checkpoints are never overwritten. Models that have finished are
+# skipped on a rerun; an interrupted model must be deleted and starts again.
 rebuild: check-env $(RAW)
 	for m in $(MODELS); do \
 		$(PYTHON) -m src.pipeline.train --model $$m --models-dir artifacts/rebuild/models \
