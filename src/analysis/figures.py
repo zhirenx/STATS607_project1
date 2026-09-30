@@ -14,6 +14,7 @@ Each model keeps the same colour in every figure.
 Usage::
 
     python -m src.analysis.figures --figure training_curves --out results/figures/training_curves.png
+    python -m src.analysis.figures --all --out-dir results/figures
 """
 
 from __future__ import annotations
@@ -139,7 +140,7 @@ def plot_sentence_lengths(config: Config, runs: list[ModelRun]):
 
 
 def plot_model_comparison(config: Config, runs: list[ModelRun]):
-    """Accuracy with 95% CI, recorded training time and parameter count per model."""
+    """Accuracy with 95% CI, training compute (FLOPs) and parameter count per model."""
     table = build_model_comparison(runs)
     colors = [model_colors(runs, config)[run.key] for run in runs]
     y = np.arange(len(runs))
@@ -288,10 +289,14 @@ FIGURES = {
 
 
 def main(argv: list[str] | None = None) -> int:
-    """Draw one figure and save it as PNG."""
+    """Draw one figure (``--figure``) or all of them (``--all``) and save PNG files."""
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
-    parser.add_argument("--figure", required=True, choices=list(FIGURES))
-    parser.add_argument("--out", type=Path, required=True)
+    which = parser.add_mutually_exclusive_group(required=True)
+    which.add_argument("--figure", choices=list(FIGURES))
+    which.add_argument("--all", action="store_true", help="draw every figure into --out-dir")
+    parser.add_argument("--out", type=Path, help="output file (with --figure)")
+    parser.add_argument("--out-dir", type=Path, default=Path("results/figures"),
+                        help="output directory (with --all; default: results/figures)")
     parser.add_argument("--config", type=Path, default=DEFAULT_CONFIG)
     parser.add_argument("--artifacts", type=Path, default=ARTIFACTS_DIR,
                         help="directory holding training_logs/ and predictions/")
@@ -299,18 +304,23 @@ def main(argv: list[str] | None = None) -> int:
     args = parser.parse_args(argv)
     setup_logging()
 
+    if args.figure and args.out is None:
+        parser.error("--figure needs --out")
     config = load_config(args.config)
     if args.models:
         config = config.restrict(args.models)
-    draw, needs_runs = FIGURES[args.figure]
-    runs = load_runs(config, args.artifacts) if needs_runs else []
-    fig = draw(config, runs)
-    args.out.parent.mkdir(parents=True, exist_ok=True)
-    # Drop the matplotlib version from the PNG metadata so identical inputs
-    # give byte-identical files.
-    fig.savefig(args.out, dpi=200, bbox_inches="tight", metadata={"Software": None})
-    plt.close(fig)
-    log.info("wrote %s", args.out)
+    names = list(FIGURES) if args.all else [args.figure]
+    runs = load_runs(config, args.artifacts) if any(FIGURES[n][1] for n in names) else []
+    for name in names:
+        out = args.out_dir / f"{name}.png" if args.all else args.out
+        draw, _ = FIGURES[name]
+        fig = draw(config, runs)
+        out.parent.mkdir(parents=True, exist_ok=True)
+        # Drop the matplotlib version from the PNG metadata so identical
+        # inputs give byte-identical files.
+        fig.savefig(out, dpi=200, bbox_inches="tight", metadata={"Software": None})
+        plt.close(fig)
+        log.info("wrote %s", out)
     return 0
 
 

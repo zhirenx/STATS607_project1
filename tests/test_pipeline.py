@@ -34,6 +34,17 @@ def test_every_output_is_written(outputs):
     assert "## Main findings" in (outputs / "report" / "summary.md").read_text()
 
 
+def test_all_option_matches_single_outputs(outputs, tmp_path):
+    assert tables.main(["--all", "--out-dir", str(tmp_path / "tables")]) == 0
+    assert figures.main(["--all", "--out-dir", str(tmp_path / "figures")]) == 0
+    for name in tables.TABLES:
+        assert (tmp_path / "tables" / f"{name}.csv").read_bytes() == \
+            (outputs / "tables" / f"{name}.csv").read_bytes()
+    for name in figures.FIGURES:
+        assert (tmp_path / "figures" / f"{name}.png").read_bytes() == \
+            (outputs / "figures" / f"{name}.png").read_bytes()
+
+
 def test_model_comparison_table(outputs, runs):
     table = pd.read_csv(outputs / "tables" / "model_comparison.csv")
     assert table["model"].tolist() == ["BERT", "DistilBERT", "RoBERTa"]

@@ -15,6 +15,7 @@ Each table is produced by one ``build_*`` function and written as CSV:
 Usage::
 
     python -m src.analysis.tables --table model_comparison --out results/tables/model_comparison.csv
+    python -m src.analysis.tables --all --out-dir results/tables
 """
 
 from __future__ import annotations
@@ -241,10 +242,14 @@ TABLES = [
 
 
 def main(argv: list[str] | None = None) -> int:
-    """Build one table and write it as CSV."""
+    """Build one table (``--table``) or all of them (``--all``) and write CSV files."""
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
-    parser.add_argument("--table", required=True, choices=TABLES)
-    parser.add_argument("--out", type=Path, required=True)
+    which = parser.add_mutually_exclusive_group(required=True)
+    which.add_argument("--table", choices=TABLES)
+    which.add_argument("--all", action="store_true", help="build every table into --out-dir")
+    parser.add_argument("--out", type=Path, help="output file (with --table)")
+    parser.add_argument("--out-dir", type=Path, default=Path("results/tables"),
+                        help="output directory (with --all; default: results/tables)")
     parser.add_argument("--config", type=Path, default=DEFAULT_CONFIG)
     parser.add_argument("--artifacts", type=Path, default=ARTIFACTS_DIR,
                         help="directory holding training_logs/ and predictions/")
@@ -252,14 +257,19 @@ def main(argv: list[str] | None = None) -> int:
     args = parser.parse_args(argv)
     setup_logging()
 
+    if args.table and args.out is None:
+        parser.error("--table needs --out")
     config = load_config(args.config)
     if args.models:
         config = config.restrict(args.models)
-    runs = [] if args.table == "dataset_summary" else load_runs(config, args.artifacts)
-    table = build_table(args.table, config, runs)
-    args.out.parent.mkdir(parents=True, exist_ok=True)
-    table.to_csv(args.out, index=False)
-    log.info("wrote %s (%d rows)", args.out, len(table))
+    names = TABLES if args.all else [args.table]
+    runs = [] if names == ["dataset_summary"] else load_runs(config, args.artifacts)
+    for name in names:
+        out = args.out_dir / f"{name}.csv" if args.all else args.out
+        table = build_table(name, config, runs)
+        out.parent.mkdir(parents=True, exist_ok=True)
+        table.to_csv(out, index=False)
+        log.info("wrote %s (%d rows)", out, len(table))
     return 0
 
 
