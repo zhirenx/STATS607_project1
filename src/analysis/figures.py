@@ -209,9 +209,10 @@ def plot_training_curves(config: Config, runs: list[ModelRun]):
     axes[1].set_ylabel("accuracy (%)")
     axes[2].set_title("(c) Validation loss")
     axes[2].set_ylabel("cross-entropy loss")
+    epochs = sorted({round(e) for run in runs for e in metrics.eval_history(run.log_history)["epoch"]})
     for ax in axes[1:]:
         ax.set_xlabel("epoch")
-        ax.set_xticks([1, 2, 3])
+        ax.set_xticks(epochs)
     for ax in axes:
         style_axes(ax)
     handles, labels = axes[1].get_legend_handles_labels()
@@ -308,6 +309,9 @@ def main(argv: list[str] | None = None) -> int:
         parser.error("--figure needs --out")
     config = load_config(args.config)
     if args.models:
+        unknown = sorted(set(args.models) - set(config.models))
+        if unknown:
+            parser.error(f"unknown model(s) {unknown}; choose from {list(config.models)}")
         config = config.restrict(args.models)
     names = list(FIGURES) if args.all else [args.figure]
     runs = load_runs(config, args.artifacts) if any(FIGURES[n][1] for n in names) else []

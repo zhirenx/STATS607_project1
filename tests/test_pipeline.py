@@ -66,7 +66,10 @@ def test_original_report_comparison_flags_the_known_discrepancies(outputs):
     mismatched = set(zip(table.loc[~table["matches"], "model"], table.loc[~table["matches"], "quantity"]))
     assert ("RoBERTa", "confusion_tn") in mismatched
     assert ("BERT", "epoch1_val_accuracy_pct") in mismatched
+    # 109,483,778 parameters round to 109M; the report quotes the usual 110M.
+    assert ("BERT", "parameters_millions") in mismatched
     assert not any(model == "DistilBERT" for model, _ in mismatched)
+    assert len(mismatched) == 10
 
 
 def run_fresh(module, args, out, hash_seed="0", block_torch=False):

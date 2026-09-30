@@ -6,11 +6,12 @@ regenerate it. Every training cell ended in
 `RuntimeError: on_train_begin must be called before on_evaluate`, the summary
 CSV was empty, two plots were blank axes, and two were never written. The
 report's Tables I and II and its confusion matrix contain 28 numbers. Rebuilt
-from the data that survived, the pipeline reproduces 19 of them exactly;
-`results/tables/original_report_comparison.csv` lists all 28. The other nine
-come from the first two causes below. The third cause undermines the report's
-speed comparisons in its text. The evidence can be checked in the commit
-tagged `original`, for example with `git show original:sst2_project.ipynb`.
+from the data that survived, the pipeline reproduces 18 of them exactly;
+`results/tables/original_report_comparison.csv` lists all 28. Nine of the
+other ten come from the first two causes below, and the tenth is cosmetic
+(see the end). The third cause undermines the report's speed comparisons in
+its text. The evidence can be checked in the commit tagged `original`, for
+example with `git show original:sst2_project.ipynb`.
 
 ## 1. The BERT row describes a run that no longer exists (7 numbers)
 
@@ -69,12 +70,18 @@ depend on hardware or sleep. By that count BERT and RoBERTa cost the same
 compute, and the wall-clock times are kept only as a record in
 `model_comparison.csv`.
 
-## Not a discrepancy
+## Minor and apparent differences
 
-The report says "sentences are short (mean ~19 words)". That is true of the
-validation split (19.5 words). The notebook measured the training split (9.4
-words), which also contains short phrases. `dataset_summary.csv` reports
-both.
+- Table I gives BERT 110M parameters, the size usually quoted for
+  BERT-base. The fine-tuned classifier has 109,483,778 parameters, as the
+  notebook printed, which is 109M when rounded to the nearest million like
+  the other two models (66,955,010 to 67M and 124,647,170 to 125M). The
+  comparison table therefore counts it as a mismatch. It is a rounding
+  convention, not an error.
+- The report says "sentences are short (mean ~19 words)". That is true of
+  the validation split (19.5 words). The notebook measured the training split
+  (9.4 words), which also contains short phrases. `dataset_summary.csv`
+  reports both.
 
 ## Effect on the conclusions
 

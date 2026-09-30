@@ -4,6 +4,7 @@
 #                   committed artifacts (the default; also `make all`).
 #                   Needs requirements.txt only; no GPU; about a minute.
 #   make test       Run the test suite.
+#   make data       Only download and verify the SST-2 files.
 #   make rebuild    Full rebuild from the raw data: fine-tune all three models
 #                   (roughly 7-10 hours on an Apple Silicon Mac), export them to
 #                   artifacts/rebuild/, then build results/rebuild/.
@@ -136,4 +137,4 @@ clean:
 	rm -rf results/rebuild results/smoke artifacts/smoke
 
 help:
-	@sed -n '1,20p' Makefile
+	@sed -n '/^[^#]/q;p' Makefile

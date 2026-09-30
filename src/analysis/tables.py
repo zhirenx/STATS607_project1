@@ -175,26 +175,25 @@ def build_misclassified_examples(runs: list[ModelRun]) -> pd.DataFrame:
 
 
 def reproduced_values(runs: list[ModelRun]) -> dict[tuple[str, str], float]:
-    """Map ``(model, quantity)`` to the value reproduced from the artifacts."""
+    """Map ``(model, quantity)`` to the reproduced value, rounded as the report printed it.
+
+    Values are rounded once, from the exact artifacts, never from the
+    already-rounded cells of the other tables.
+    """
     values = {}
-    comparison = build_model_comparison(runs).set_index("model")
-    per_epoch = build_per_epoch_validation(runs)
     for run in runs:
-        name = run.display_name
-        row = comparison.loc[name]
-        values[(name, "best_val_accuracy_pct")] = round(100 * row["val_accuracy"], 1)
-        values[(name, "best_epoch")] = row["best_epoch"]
-        values[(name, "parameters_millions")] = round(row["parameters_millions"])
+        name, preds = run.display_name, run.predictions
+        best = best_row(run)
+        values[(name, "best_val_accuracy_pct")] = round(100 * metrics.accuracy(preds["label"], preds["pred"]), 1)
+        values[(name, "best_epoch")] = int(round(best["epoch"]))
+        values[(name, "parameters_millions")] = round(run.export_info["num_parameters"] / 1e6)
         runtime = run.run_info.get("train_runtime_seconds")
         values[(name, "train_time_minutes")] = np.nan if runtime is None else round(runtime / 60)
-        for _, epoch_row in per_epoch.loc[per_epoch["model"] == name].iterrows():
-            epoch = epoch_row["epoch"]
-            values[(name, f"epoch{epoch}_val_accuracy_pct")] = round(100 * epoch_row["val_accuracy"], 1)
-            values[(name, f"epoch{epoch}_val_loss")] = round(epoch_row["val_loss"], 3)
-        counts = metrics.confusion_counts(
-            run.predictions["label"], run.predictions["pred"]
-        )
-        for key, value in counts.items():
+        for row in metrics.eval_history(run.log_history).itertuples():
+            epoch = int(round(row.epoch))
+            values[(name, f"epoch{epoch}_val_accuracy_pct")] = round(100 * row.eval_accuracy, 1)
+            values[(name, f"epoch{epoch}_val_loss")] = round(row.eval_loss, 3)
+        for key, value in metrics.confusion_counts(preds["label"], preds["pred"]).items():
             values[(name, f"confusion_{key}")] = value
     return values
 
@@ -261,6 +260,9 @@ def main(argv: list[str] | None = None) -> int:
         parser.error("--table needs --out")
     config = load_config(args.config)
     if args.models:
+        unknown = sorted(set(args.models) - set(config.models))
+        if unknown:
+            parser.error(f"unknown model(s) {unknown}; choose from {list(config.models)}")
         config = config.restrict(args.models)
     names = TABLES if args.all else [args.table]
     runs = [] if names == ["dataset_summary"] else load_runs(config, args.artifacts)

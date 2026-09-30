@@ -151,11 +151,13 @@ Supplementary outputs:
 ## Differences from the original report
 
 The original report's Tables I and II and its confusion matrix contain 28
-numbers; 19 are reproduced exactly, and
-`results/tables/original_report_comparison.csv` lists all 28. The other nine
-come from the first two problems below, and the third undermines the report's
-speed comparisons. [docs/discrepancies.md](docs/discrepancies.md) documents
-each with evidence:
+numbers; 18 are reproduced exactly, and
+`results/tables/original_report_comparison.csv` lists all 28. Nine of the
+other ten come from the first two problems below. The tenth is cosmetic: the
+report gives BERT the conventional size "110M", while the model has 109.5
+million parameters, 109M when rounded like the other two models. The third
+problem undermines the report's speed comparisons.
+[docs/discrepancies.md](docs/discrepancies.md) documents each with evidence:
 
 1. **The BERT results came from a run that no longer exists.** BERT was
    trained twice and the second run overwrote the first run's checkpoints.
