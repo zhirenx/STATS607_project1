@@ -27,7 +27,7 @@ python3 --version        # must print 3.11-3.14; otherwise use python3.12, pytho
 python3 -m venv .venv
 .venv/bin/python -m pip install --only-binary=:all: -r requirements.txt
 make reproduce           # every table and figure plus a report, in under a minute
-make test                # 52 tests, a few seconds
+make test                # 53 tests, about ten seconds
 ```
 
 `make reproduce` (also plain `make`) downloads the SST-2 data (3 MB, checksum
